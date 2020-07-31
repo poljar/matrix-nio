@@ -17,10 +17,12 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from jsonschema import Draft4Validator, FormatChecker, validators
 
 RoomRegex = "^!.+:.+$"
-UserIdRegex = "^@.*:.+$"
+UserIdRegex = "^@[a-z0-9._=/]+:.+$"
 EventTypeRegex = r"^.+\..+"
 Base64Regex = r"[^-A-Za-z0-9+/=]|=[^=]|={3,}$"
 KeyRegex = r"(ed25519|curve25519):.+"
@@ -49,14 +51,8 @@ Validator = extend_with_default(Draft4Validator)
 @FormatChecker.cls_checks("user_id", ValueError)
 def check_user_id(value):
     # type: (str) -> bool
-    if not value.startswith("@"):
-        raise ValueError("UserIDs start with @")
-
-    if ":" not in value:
-        raise ValueError(
-            "UserIDs must have a domain component, seperated by a :"
-        )
-
+    if re.match(UserIdRegex, value) is None:
+        raise ValueError(f"UserID does not pass validation. Format: '{UserIdRegex}'")
     return True
 
 
