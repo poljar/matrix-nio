@@ -23,12 +23,14 @@ from typing import Any, AsyncGenerator, AsyncIterable, Dict, Iterable, Union
 
 import aiofiles
 from aiofiles.threadpool.binary import AsyncBufferedReader
-from Crypto import Random  # nosec
-from Crypto.Cipher import AES  # nosec
-from Crypto.Hash import SHA256  # nosec
-from Crypto.Util import Counter  # nosec
+from .._compat import package_installed
+if package_installed("Crypto"):
+    from Crypto import Random  # nosec
+    from Crypto.Cipher import AES  # nosec
+    from Crypto.Hash import SHA256  # nosec
+    from Crypto.Util import Counter  # nosec
 
-from .attachments import _get_decryption_info_dict
+    from .attachments import _get_decryption_info_dict
 
 AsyncDataT = Union[
     str,

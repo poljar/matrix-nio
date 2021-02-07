@@ -42,7 +42,7 @@ if package_installed("olm"):
 
     from .sas import Sas, SasState
 
-    ENCRYPTION_ENABLED = True
+    ENCRYPTION_ENABLED = False
 
 else:
     ENCRYPTION_ENABLED = False
