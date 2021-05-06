@@ -67,12 +67,14 @@ from ..api import (
     RoomPreset,
     PushRuleKind,
 )
-from ..crypto import (
-    OlmDevice,
-    AsyncDataT,
-    async_encrypt_attachment,
-    async_generator_from_data,
-)
+from .._compat import package_installed
+if package_installed("Crypto"):
+    from ..crypto import (
+        OlmDevice,
+        AsyncDataT,
+        async_encrypt_attachment,
+        async_generator_from_data,
+    )
 from ..exceptions import (
     GroupEncryptionError,
     LocalProtocolError,
