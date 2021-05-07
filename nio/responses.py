@@ -39,6 +39,7 @@ logger_group.add_logger(logger)
 
 
 __all__ = [
+    "ConnectionInfo",
     "ContentRepositoryConfigResponse",
     "ContentRepositoryConfigError",
     "FileResponse",
@@ -48,6 +49,7 @@ __all__ = [
     "DeletePushRuleError",
     "DeletePushRuleResponse",
     "Device",
+    "DeviceInfo",
     "DeviceList",
     "DevicesResponse",
     "DevicesError",
@@ -129,6 +131,7 @@ __all__ = [
     "RoomTypingError",
     "RoomReadMarkersResponse",
     "RoomReadMarkersError",
+    "SessionInfo",
     "UploadResponse",
     "UploadError",
     "ProfileGetResponse",
@@ -157,6 +160,7 @@ __all__ = [
     "UploadFilterResponse",
     "UpdateReceiptMarkerError",
     "UpdateReceiptMarkerResponse",
+    "WhoisResponse",
 ]
 
 
@@ -1853,3 +1857,60 @@ class SetPushRuleActionsResponse(EmptyResponse):
 
 class SetPushRuleActionsError(ErrorResponse):
     pass
+
+
+@dataclass
+class ConnectionInfo:
+    ip: Optional[str] = field()
+    last_seen: Optional[int] = field()
+    user_agent: Optional[str] = field()
+
+    @classmethod
+    def from_dict(cls, parsed_dict: Dict[str, Any]) -> "ConnectionInfo":
+        return cls(parsed_dict.get("ip", None),
+                   parsed_dict.get("last_seen", None),
+                   parsed_dict.get("user_agent", None))
+
+
+@dataclass
+class SessionInfo:
+    connections: List[ConnectionInfo] = field()
+
+    @classmethod
+    def from_dict(cls, parsed_dict: Dict[str, Any]) -> "SessionInfo":
+        return cls([
+            ConnectionInfo.from_dict(c)
+            for c in parsed_dict.get("connections", [])
+        ])
+
+
+@dataclass
+class DeviceInfo:
+    sessions: List[SessionInfo] = field()
+
+    @classmethod
+    def from_dict(cls, parsed_dict: Dict[str, Any]) -> "DeviceInfo":
+        return cls([
+            SessionInfo.from_dict(s) for s in parsed_dict.get("sessions", [])
+        ])
+
+
+class WhoisError(ErrorResponse):
+    pass
+
+
+@dataclass
+class WhoisResponse(Response):
+    user_id: Optional[str] = field()
+    devices: Dict[str, DeviceInfo] = field()
+
+    @classmethod
+    @verify(Schemas.whois, WhoisError)
+    def from_dict(
+            cls, parsed_dict: Dict[str,
+                                   Any]) -> Union["WhoisResponse", WhoisError]:
+        return cls(
+            parsed_dict.get("user_id", None), {
+                dk: DeviceInfo.from_dict(dv)
+                for dk, dv in parsed_dict.get("devices", dict()).items()
+            })

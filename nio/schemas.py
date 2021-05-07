@@ -1908,3 +1908,50 @@ class Schemas:
         "user_id": "string",
         "required": ["user_id"],
     }
+
+    whois = {
+        "type": "object",
+        "properties": {
+            "user_id": {
+                "type": "string"
+            },
+            "devices": {
+                "type": "object",
+                "properties": {
+                    ".*": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "sessions": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "connections": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ip": {
+                                                            "type": "string"
+                                                        },
+                                                        "last_seen": {
+                                                            "type": "integer"
+                                                        },
+                                                        "user_agent": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }

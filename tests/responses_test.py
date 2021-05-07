@@ -20,7 +20,9 @@ from nio.responses import (DeleteDevicesAuthResponse, DevicesResponse,
                            RoomTypingResponse, SyncError,
                            SyncResponse, ThumbnailResponse, ThumbnailError,
                            ToDeviceError, ToDeviceResponse,
-                           UploadResponse, _ErrorWithRoomId, LoginInfoResponse)
+                           UploadResponse, _ErrorWithRoomId, LoginInfoResponse,
+                           WhoisResponse, ConnectionInfo, DeviceInfo,
+                           SessionInfo)
 
 TEST_ROOM_ID = "!test:example.org"
 
@@ -265,3 +267,20 @@ class TestClass:
             "tests/data/login_info.json")
         response = LoginInfoResponse.from_dict(parsed_dict)
         assert isinstance(response, LoginInfoResponse)
+
+    def test_whois_parse(self):
+        parsed_dict = TestClass._load_response(
+            "tests/data/whois_response.json")
+        response = WhoisResponse.from_dict(parsed_dict)
+        assert isinstance(response, WhoisResponse)
+        device = next(iter(response.devices.values()))
+        assert isinstance(device, DeviceInfo)
+        session = device.sessions[0]
+        assert isinstance(session, SessionInfo)
+        connection = session.connections[0]
+        assert isinstance(connection, ConnectionInfo)
+
+    def test_whois_parse_empty(self):
+        parsed_dict = dict()
+        response = WhoisResponse.from_dict(parsed_dict)
+        assert isinstance(response, WhoisResponse)

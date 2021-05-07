@@ -1,0 +1,23 @@
+{
+  "user_id": "@peter:rabbit.rocks",
+  "devices": {
+    "teapot": {
+      "sessions": [
+        {
+          "connections": [
+            {
+              "ip": "127.0.0.1",
+              "last_seen": 1411996332123,
+              "user_agent": "curl/7.31.0-DEV"
+            },
+            {
+              "ip": "10.0.0.2",
+              "last_seen": 1411996332123,
+              "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
