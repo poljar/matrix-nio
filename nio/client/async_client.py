@@ -41,6 +41,7 @@ from typing import (
     Type,
     Union,
 )
+from urllib.parse import urlparse
 from uuid import UUID, uuid4
 
 from dataclasses import dataclass, field
@@ -2644,12 +2645,15 @@ class AsyncClient(Client):
     @client_session
     async def download(
         self,
-        server_name: str,
-        media_id: str,
+        server_name: Optional[str] = None,
+        media_id: Optional[str] = None,
+        mxc: Optional[str] = None,
         filename: Optional[str] = None,
         allow_remote: bool = True,
     ) -> Union[DownloadResponse, DownloadError]:
         """Get the content of a file from the content repository.
+
+        Either `server_name` and `media_id` or `mxc` must be given.
 
         This method ignores `AsyncClient.config.request_timeout` and uses `0`.
 
@@ -2659,8 +2663,9 @@ class AsyncClient(Client):
         a `DownloadError` if there was an error with the request.
 
         Args:
-            server_name (str): The server name from the mxc:// URI.
-            media_id (str): The media ID from the mxc:// URI.
+            server_name (str, optional): The server name from the mxc:// URI.
+            media_id (str, optional): The media ID from the mxc:// URI.
+            mxc (str, optional): The mxc:// URI.
             filename (str, optional): A filename to be returned in the response
                 by the server. If None (default), the original name of the
                 file will be returned instead, if there is one.
@@ -2670,6 +2675,11 @@ class AsyncClient(Client):
                 itself.
         """
         # TODO: support TransferMonitor
+
+        if mxc:
+            url = urlparse(mxc)
+            server_name = url.netloc
+            media_id = url.path.replace('/', '')
 
         http_method, path = Api.download(
             server_name, media_id, filename, allow_remote

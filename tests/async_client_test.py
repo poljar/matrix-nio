@@ -2173,7 +2173,7 @@ class TestClass:
             },
             body=self.file_response,
         )
-        resp = await async_client.download(server_name, media_id, filename)
+        resp = await async_client.download(server_name, media_id, filename=filename)
         assert isinstance(resp, DownloadResponse)
         assert resp.body == self.file_response
         assert resp.filename == filename
@@ -2188,10 +2188,66 @@ class TestClass:
             ),
             status=429,
             content_type="application/json",
-            body = b'{"errcode": "M_LIMIT_EXCEEDED", "retry_after_ms": 1}',
+            body=b'{"errcode": "M_LIMIT_EXCEEDED", "retry_after_ms": 1}',
             repeat=True,
         )
         resp = await async_client.download(server_name, media_id)
+        assert isinstance(resp, DownloadError)
+
+    async def test_download_mxc(self, async_client, aioresponse):
+        server_name = "example.org"
+        media_id = "ascERGshawAWawugaAcauga"
+        mxc = "mxc://example.org/ascERGshawAWawugaAcauga"
+        filename = "example&.png"  # has unsafe character to test % encoding
+
+        aioresponse.get(
+            "https://example.org/_matrix/media/r0/download/{}/{}"
+            "?allow_remote=true".format(
+                server_name,
+                media_id,
+            ),
+            status=200,
+            content_type="image/png",
+            body=self.file_response,
+        )
+        resp = await async_client.download(mxc=mxc)
+        assert isinstance(resp, DownloadResponse)
+        assert resp.body == self.file_response
+        assert resp.filename is None
+
+        aioresponse.get(
+            "https://example.org/_matrix/media/r0/download/{}/{}/{}"
+            "?allow_remote=true".format(
+                server_name,
+                media_id,
+                quote(filename),
+            ),
+            status=200,
+            content_type="image/png",
+            headers = {
+                "content-disposition": 'inline; filename="{}"'.format(filename)
+            },
+            body=self.file_response,
+        )
+        resp = await async_client.download(mxc=mxc, filename=filename)
+        assert isinstance(resp, DownloadResponse)
+        assert resp.body == self.file_response
+        assert resp.filename == filename
+
+        async_client.config = AsyncClientConfig(max_limit_exceeded=0)
+
+        aioresponse.get(
+            "https://example.org/_matrix/media/r0/download/{}/{}"
+            "?allow_remote=true".format(
+                server_name,
+                media_id,
+            ),
+            status=429,
+            content_type="application/json",
+            body=b'{"errcode": "M_LIMIT_EXCEEDED", "retry_after_ms": 1}',
+            repeat=True,
+        )
+        resp = await async_client.download(mxc=mxc)
         assert isinstance(resp, DownloadError)
 
     async def test_thumbnail(self, async_client, aioresponse):
